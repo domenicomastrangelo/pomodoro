@@ -35,6 +35,7 @@ func (p *Pomodoro) LongBreak() {
 
 func (p *Pomodoro) notifyCountdown(minutes uint, message string) {
 	p.mutex.Lock()
+	defer p.mutex.Unlock()
 	for i := int(minutes) * 60; i >= 0; i-- {
 		fmt.Print("\033[s\033[K")
 		fmt.Printf("\033[48;5;220m") // set foreground
@@ -48,5 +49,4 @@ func (p *Pomodoro) notifyCountdown(minutes uint, message string) {
 
 		time.Sleep(time.Second)
 	}
-	p.mutex.Unlock()
 }
