@@ -1,8 +1,8 @@
 package pomodoro
 
 import (
+	"context"
 	"fmt"
-	"sync"
 	"time"
 )
 
@@ -10,14 +10,15 @@ type Pomodoro struct {
 	PomodoroMinutes   uint
 	ShortBreakMinutes uint
 	LongBreakMinutes  uint
-	mutex             sync.Mutex
+	ctx               context.Context
 }
 
-func New() *Pomodoro {
+func New(ctx context.Context) *Pomodoro {
 	return &Pomodoro{
 		PomodoroMinutes:   25,
 		ShortBreakMinutes: 5,
 		LongBreakMinutes:  15,
+		ctx:               ctx,
 	}
 }
 
@@ -34,19 +35,22 @@ func (p *Pomodoro) LongBreak() {
 }
 
 func (p *Pomodoro) notifyCountdown(minutes uint, message string) {
-	p.mutex.Lock()
-	defer p.mutex.Unlock()
 	for i := int(minutes) * 60; i >= 0; i-- {
-		fmt.Print("\033[s\033[K")
-		fmt.Printf("\033[48;5;220m") // set foreground
-		fmt.Printf("\033[38;5;16m")  // set background
-		fmt.Printf(" %s ", message)
-		fmt.Printf("\033[0m")        // reset colors
-		fmt.Printf("\033[48;5;16m")  // set foreground
-		fmt.Printf("\033[38;5;220m") // set background
-		fmt.Printf(" %d:%02d\033[u ", i/60, i%60)
-		fmt.Printf("\033[0m ")
+		select {
+		case <-p.ctx.Done():
+			return
+		default:
+			fmt.Print("\033[s\033[K")
+			fmt.Printf("\033[48;5;220m") // set foreground
+			fmt.Printf("\033[38;5;16m")  // set background
+			fmt.Printf(" %s ", message)
+			fmt.Printf("\033[0m")        // reset colors
+			fmt.Printf("\033[48;5;16m")  // set foreground
+			fmt.Printf("\033[38;5;220m") // set background
+			fmt.Printf(" %d:%02d\033[u ", i/60, i%60)
+			fmt.Printf("\033[0m ")
 
-		time.Sleep(time.Second)
+			time.Sleep(time.Second)
+		}
 	}
 }

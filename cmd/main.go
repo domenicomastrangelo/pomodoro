@@ -1,7 +1,10 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"os"
+	"os/signal"
 
 	"github.com/domenicomastrangelo/pomodoro/internal/pomodoro"
 )
@@ -13,22 +16,38 @@ func main() {
 
 	flag.Parse()
 
-	count := 1
+	ctx, cancel := context.WithCancel(context.Background())
 
-	p := pomodoro.New()
+	// Cancel context on Ctrl+C
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	go func() {
+		<-c
+		cancel()
+	}()
+
+	p := pomodoro.New(ctx)
 	p.PomodoroMinutes = *pomodoroMinutes
 	p.ShortBreakMinutes = *shortBreakMinutes
 	p.LongBreakMinutes = *longBreakMinutes
 
+	pomodoroCount := 0
+
 	for {
+		pomodoroCount++
+
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
 		p.Start()
 
-		if count%4 == 0 {
+		if pomodoroCount%4 == 0 {
 			p.LongBreak()
 		} else {
 			p.ShortBreak()
 		}
-
-		count++
 	}
 }
