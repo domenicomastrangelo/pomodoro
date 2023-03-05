@@ -35,11 +35,15 @@ func (p *Pomodoro) LongBreak() {
 }
 
 func (p *Pomodoro) notifyCountdown(minutes uint, message string) {
-	for i := int(minutes) * 60; i >= 0; i-- {
+	seconds := minutes * 60
+
+	ticker := time.NewTicker(time.Second)
+
+	for {
 		select {
 		case <-p.ctx.Done():
 			return
-		default:
+		case <-ticker.C:
 			fmt.Print("\033[s\033[K")
 			fmt.Printf("\033[48;5;220m") // set foreground
 			fmt.Printf("\033[38;5;16m")  // set background
@@ -47,10 +51,11 @@ func (p *Pomodoro) notifyCountdown(minutes uint, message string) {
 			fmt.Printf("\033[0m")        // reset colors
 			fmt.Printf("\033[48;5;16m")  // set foreground
 			fmt.Printf("\033[38;5;220m") // set background
-			fmt.Printf(" %d:%02d\033[u ", i/60, i%60)
+			fmt.Printf(" %d:%02d\033[u ", seconds/60, seconds%60)
 			fmt.Printf("\033[0m ")
 
-			time.Sleep(time.Second)
+			seconds--
+		default:
 		}
 	}
 }
