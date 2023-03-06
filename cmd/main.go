@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"flag"
+	"log"
+	"math"
 	"os"
 	"os/signal"
 
@@ -31,10 +33,8 @@ func main() {
 	p.ShortBreakMinutes = *shortBreakMinutes
 	p.LongBreakMinutes = *longBreakMinutes
 
-	pomodoroCount := 0
-
 	for {
-		pomodoroCount++
+		p.Count++
 
 		select {
 		case <-ctx.Done():
@@ -44,10 +44,14 @@ func main() {
 
 		p.Start()
 
-		if pomodoroCount%4 == 0 {
+		if p.Count%4 == 0 {
 			p.LongBreak()
 		} else {
 			p.ShortBreak()
+		}
+
+		if p.Count == math.MaxUint8 {
+			log.Fatalln("You have reached the maximum number of pomodoros")
 		}
 	}
 }
