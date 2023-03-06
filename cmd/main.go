@@ -21,11 +21,14 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
+	finalMessage := "You have reached the maximum number of pomodoros"
+
 	// Cancel context on Ctrl+C
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		<-c
+		finalMessage = "You have interrupted the pomodoro (Ctrl+C))"
 		cancel()
 	}()
 
@@ -43,7 +46,7 @@ func main() {
 	for *pomodoroAmount*4 > uint(p.Count) {
 		select {
 		case <-ctx.Done():
-			return
+			break
 		default:
 		}
 
@@ -62,5 +65,5 @@ func main() {
 		p.Count++
 	}
 
-	fmt.Println("\033[s\033[K\033[48;5;220m\033[38;5;16m You have reached the maximum number of pomodoros \033[0m")
+	fmt.Printf("\033[s\033[K\033[48;5;220m\033[38;5;16m %s \033[0m", finalMessage)
 }
