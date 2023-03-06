@@ -44,7 +44,10 @@ func (p *Pomodoro) notifyCountdown(minutes uint, message string) {
 		case <-p.ctx.Done():
 			return
 		case <-ticker.C:
-			fmt.Printf("\033[s")
+			if seconds == 0 {
+				return
+			}
+			fmt.Printf("\033[s\033[K")
 			fmt.Printf("\033[48;5;220m") // set foreground
 			fmt.Printf("\033[38;5;16m")  // set background
 			fmt.Printf(" %s ", message)
