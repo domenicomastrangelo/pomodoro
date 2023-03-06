@@ -3,6 +3,7 @@ package pomodoro
 import (
 	"context"
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -12,6 +13,7 @@ type Pomodoro struct {
 	LongBreakMinutes  uint
 	ctx               context.Context
 	Count             uint8
+	PomodoroAmount    uint8
 }
 
 func New(ctx context.Context) *Pomodoro {
@@ -51,7 +53,7 @@ func (p *Pomodoro) notifyCountdown(minutes uint, message string) {
 			fmt.Printf("\033[s\033[K")
 			fmt.Printf("\033[38;5;231m") // set background
 			fmt.Printf("\033[48;5;16m")  // set foreground
-			fmt.Printf(" %d ", p.Count)
+			fmt.Printf(" %d:%d ", uint(math.Floor(float64(p.Count)/4)), p.PomodoroAmount)
 			fmt.Printf("\033[48;5;220m") // set foreground
 			fmt.Printf("\033[38;5;16m")  // set background
 			fmt.Printf(" %s ", message)

@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
+	"fmt"
 	"math"
 	"os"
 	"os/signal"
@@ -15,6 +15,7 @@ func main() {
 	pomodoroMinutes := flag.Uint("m", 25, "minutes of pomodoro")
 	shortBreakMinutes := flag.Uint("s", 5, "minutes of short break")
 	longBreakMinutes := flag.Uint("l", 15, "minutes of long break")
+	pomodoroAmount := flag.Uint("p", 4, "amount of total pomodoros")
 
 	flag.Parse()
 
@@ -33,9 +34,13 @@ func main() {
 	p.ShortBreakMinutes = *shortBreakMinutes
 	p.LongBreakMinutes = *longBreakMinutes
 
-	for {
-		p.Count++
+	if *pomodoroAmount > math.MaxUint8 {
+		*pomodoroAmount = math.MaxUint8
+	}
 
+	p.PomodoroAmount = uint8(*pomodoroAmount)
+
+	for *pomodoroAmount*4 > uint(p.Count) {
 		select {
 		case <-ctx.Done():
 			return
@@ -51,7 +56,11 @@ func main() {
 		}
 
 		if p.Count == math.MaxUint8 {
-			log.Fatalln("You have reached the maximum number of pomodoros")
+			break
 		}
+
+		p.Count++
 	}
+
+	fmt.Println("\033[s\033[K\033[48;5;220m\033[38;5;16m You have reached the maximum number of pomodoros \033[0m")
 }
